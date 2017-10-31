@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Implementing a simple language</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; }
+        ul { list-style-type: none; }
+        ul, li { margin-top: 0.1cm; margin-bottom: 0.1cm; }
+        pre { background-color: #dddddd;}
+    </style>
+    <script src="scripts/form.js"></script>
+    <script src="scripts/Lexeme.js"></script>
+    <script src="scripts/Lexer.js"></script>
+    <script src="scripts/Parser.js"></script>
+    <script src="scripts/Program.js"></script>
+    <script src="scripts/Statement.js"></script>
+    <script src="scripts/AssignmentStatement.js"></script>
+    <script src="scripts/OutputStatement.js"></script>
+    <script src="scripts/Expression.js"></script>
+</head>
+
+<body>
+    <h1>Implementing a simple language</h1>
+    
+    <p>This page demonstrates language implementation techniques using a small formal language with the following grammar.</p>
+    <pre style="line-height: 200%;">&lt;program&gt; ::= start &lt;statement&gt;* end
+&lt;statement&gt; ::= &lt;assignment_statement&gt; | &lt;output_statement&gt;
+&lt;assignment_statement&gt; ::= &lt;identifier&gt; = &lt;expression&gt;
+&lt;output_statement&gt; ::= print ( &lt;expression&gt; )
+&lt;expression&gt; ::= &lt;identifier&gt; | &lt;number&gt;
+&lt;identifier&gt; ::= /[a-zA-Z]+[a-zA-Z0-9_]*/
+&lt;number&gt; ::= /[0-9]+/</pre>
+
+<p>In addition, comments consisting of any characters starting with <code>/*</code> and ending with <code>*/</code> will be ignored.</p>
+    
+    <form onsubmit="return false;">
+        <p>
+            <textarea rows="7" cols="80" id="code">/* You can edit this sample program. */
+start
+  a = 1
+  b = a
+  print(b) /* This prints 1 */
+end</textarea>
+        </p>
+        <p>
+            <input type="checkbox" id="useRegex" value="true" checked>Use regular expressions
+            <button type="submit" id="runButton" style="margin-left: 100px;" onclick="runLexer();">Run lexer</button>
+        </p>
+    </form>
+
+    <div id="result"></div>
+    
+</body>
+</html>
