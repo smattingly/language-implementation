@@ -31,7 +31,7 @@ class Program { // eslint-disable-line no-unused-vars
         }
     }
 
-    getHtmlResults() {
+    getParseTreeAsHtml() {
         let result = `
         <ul>
             <li>&lt;program&gt;
@@ -39,7 +39,7 @@ class Program { // eslint-disable-line no-unused-vars
                     <li>start</li>`;
 
         for (let i = 0; i < this.statements.length; i++) {
-            result += this.statements[i].getHtmlResults();
+            result += this.statements[i].getParseTreeAsHtml();
         }
 
         result += `
@@ -49,5 +49,56 @@ class Program { // eslint-disable-line no-unused-vars
         </ul>`;
 
         return result;
+    }
+
+    interpret() {
+        let symbolTable = new Map();
+        this.output = '';
+
+        for (let i = 0; i < this.statements.length; i++) {
+            let statementOutput = this.statements[i].interpret(symbolTable);
+            if (statementOutput) {
+                this.output = this.output + statementOutput;
+            }
+        }
+    }
+
+    compile() {
+        let symbolTable = new Map();
+        this.translation = `# standard setup for any program
+    .intel_syntax noprefix
+    .section	.rodata
+.LC0:
+    .string	"%d\\n"
+    .text
+    .globl	main
+    .type	main, @function
+main:
+.LFB0:
+    .cfi_startproc
+    push	rbp
+    .cfi_def_cfa_offset 16
+    .cfi_offset 6, -16
+    mov	rbp, rsp
+    .cfi_def_cfa_register 6
+    sub rsp, 16`;
+        
+
+        // compile all statements
+        for (let i = 0; i < this.statements.length; i++) {
+            let statementTranslation = this.statements[i].compile(symbolTable);
+            if (statementTranslation) {
+                this.translation = this.translation + statementTranslation;
+            }
+        }
+
+        this.translation = this.translation + `
+# standard teardown for any program     
+    leave
+    .cfi_def_cfa 7, 8
+    ret
+    .cfi_endproc
+.LFE0:
+    .size	main, .-main\n`;
     }
 }

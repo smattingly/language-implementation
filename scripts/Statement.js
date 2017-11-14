@@ -19,4 +19,7 @@ class Statement { // eslint-disable-line no-unused-vars
         
         return statement;
     }
+    compile() {
+        return undefined;
+    }
 }

@@ -5,10 +5,9 @@
     <meta charset="UTF-8" />
     <title>Implementing a simple language</title>
     <style>
-        body { font-family: Arial, Helvetica, sans-serif; }
+        body { font-family: Arial, Helvetica, sans-serif; margin: 2% 5% 2% 5%;}
         ul { list-style-type: none; }
         ul, li { margin-top: 0.1cm; margin-bottom: 0.1cm; }
-        pre { background-color: #dddddd;}
     </style>
     <script src="scripts/form.js"></script>
     <script src="scripts/Lexeme.js"></script>
@@ -45,8 +44,8 @@ start
 end</textarea>
         </p>
         <p>
-            <input type="checkbox" id="useRegex" value="true" checked>Use regular expressions
-            <button type="submit" id="runButton" style="margin-left: 100px;" onclick="runLexer();">Run lexer</button>
+            <button type="submit" id="runButton" onclick="runLexer();">Run lexer</button>
+            <span id="regexControl"><input type="checkbox" id="useRegex" value="true" checked>Use regular expressions</span>
         </p>
     </form>
 

@@ -8,7 +8,7 @@ class Parser { // eslint-disable-line no-unused-vars
         this.program.parse(lexer);
     }
 
-    getHtmlResults() {
-        return this.program.getHtmlResults();
+    getParseTreeAsHtml() {
+        return this.program.getParseTreeAsHtml();
     }
 }

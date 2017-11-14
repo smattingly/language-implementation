@@ -1,5 +1,6 @@
-class OutputStatement { // eslint-disable-line no-unused-vars
+class OutputStatement extends Statement { // eslint-disable-line no-unused-vars
     constructor() {
+        super();
         this.expression;
     }
 
@@ -24,17 +25,30 @@ class OutputStatement { // eslint-disable-line no-unused-vars
         }
     }
 
-    getHtmlResults() {
+    getParseTreeAsHtml() {
         return `
         <li>&lt;output_statement&gt;
             <ul>
                 <li>print</li>
                 <li>(</li>
                 <li>
-                    ${this.expression.getHtmlResults()}
+                    ${this.expression.getParseTreeAsHtml()}
                 </li>
                 <li>)</li>
             </ul>
         </li>`;
+    }
+    
+    interpret(symbolTable) {
+        return this.expression.interpret(symbolTable) + '<br>';
+    }
+    
+    compile(symbolTable) {
+        return `
+# print(${this.expression.source})
+    mov esi, ${this.expression.compile(symbolTable)}
+    mov edi, OFFSET FLAT:.LC0
+    mov eax, 0
+    call    printf`;
     }
 }

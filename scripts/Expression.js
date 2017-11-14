@@ -36,7 +36,7 @@ class IdentifierExpression {
         this.source = lexeme.source;
     }
 
-    getHtmlResults() {
+    getParseTreeAsHtml() {
         return `&lt;expression&gt;
             <ul>
                 <li>&lt;identifier&gt;
@@ -47,6 +47,21 @@ class IdentifierExpression {
                     </ul>
                 </li>
             </ul>`;
+    }
+    
+    interpret(symbolTable) {
+        let value = symbolTable.get(this.source);
+        
+        return value || 0; // use zero as default value
+    }
+    
+    compile(symbolTable) {
+        let value = symbolTable.get(this.source);
+        if (!value) {
+            return '0';
+        }
+        
+        return `DWORD PTR [rbp-${value}]`; 
     }
 }
 
@@ -65,7 +80,7 @@ class NumberExpression {
         this.source = lexeme.source;
     }
 
-    getHtmlResults() {
+    getParseTreeAsHtml() {
         return `&lt;expression&gt;
             <ul>
                 <li>&lt;number&gt;
@@ -76,5 +91,13 @@ class NumberExpression {
                     </ul>
                 </li>
             </ul>`;
+    }
+    
+    interpret() {
+        return Number(this.source);
+    }
+    
+    compile() {
+        return Number(this.source);
     }
 }
