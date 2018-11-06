@@ -9,15 +9,7 @@
         ul { list-style-type: none; }
         ul, li { margin-top: 0.1cm; margin-bottom: 0.1cm; }
     </style>
-    <script src="scripts/form.js"></script>
-    <script src="scripts/Lexeme.js"></script>
-    <script src="scripts/Lexer.js"></script>
-    <script src="scripts/Parser.js"></script>
-    <script src="scripts/Program.js"></script>
-    <script src="scripts/Statement.js"></script>
-    <script src="scripts/AssignmentStatement.js"></script>
-    <script src="scripts/OutputStatement.js"></script>
-    <script src="scripts/Expression.js"></script>
+    <script src="scripts/ProgrammingLanguage.js" type="module"></script>
 </head>
 
 <body>
@@ -44,8 +36,8 @@ start
 end</textarea>
         </p>
         <p>
-            <button type="submit" id="runButton" onclick="runLexer();">Run lexer</button>
-            <span style="display: none;" id="regexControl"><input type="checkbox" id="useRegex" value="true" checked>Use regular expressions</span>
+            <button type="submit" id="startOver" onclick="location.reload();">Start over</button>
+            <button type="submit" id="runButton"></button>
         </p>
     </form>
 

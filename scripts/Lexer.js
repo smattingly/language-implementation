@@ -1,42 +1,71 @@
-class Lexer {   // eslint-disable-line no-unused-vars
+import { Lexeme } from "./modules.js";
+
+/** 
+ * Manages a sequence of lexemes after extracting them from source code.
+ */
+class Lexer {
+    /**
+     * Creates a new Lexer.
+     * @public
+     */
     constructor() {
-        this.lexemes = [];
-        this.inComment = false;
-        this.lexemeIndex = 0;
+        /**
+         * @property {[Lexeme]} _lexemes - The sequence of lexemes extracted from source code.
+         * @private
+         */
+        this._lexemes = [];
+
+        /**
+         * @property {number} _lexemeIndex - Indicates the current position in the sequence of lexemes.
+         * @private
+         */
+        this._lexemeIndex = 0;
+
+        /**
+         * @property {boolean} _inComment - Indicates if the current location in the source code is inside a comment block.
+         * @private
+         */
+        this._inComment = false;
     }
 
-    lex(code, useRegex) {
+    /**
+     * Performs lexical analysis, transforming source code to a sequence of lexemes.
+     * @argument {string} code - The source code to analyze.
+     * @modifies This lexer's sequence of lexemes.
+     * @public
+     */
+    analyze(code) {
         // While there is still code to process ...
         while (code.length > 0) {
             // ... extract the next lexeme ...
-            let lexeme;
-            if (useRegex) {
-                lexeme = this.extractNextLexemeWithRegex(code);
-            }
-            else {
-                lexeme = this.extractNextLexemeWithoutRegex(code);
-            }
+            let lexeme = this.extractNextLexeme(code);
 
             // ... remove the lexeme's source from the front of the code ...
             code = code.substr(lexeme.source.length);
 
             // ... and keep track of lexemes, ignoring white space and text within comments.
             if (lexeme.checkToken(Lexeme.tokens.open_comment)) {
-                this.inComment = true;
+                this._inComment = true;
             }
             else if (lexeme.checkToken(Lexeme.tokens.close_comment)) {
-                this.inComment = false;
+                this._inComment = false;
             }
-            else if (!lexeme.checkToken(Lexeme.tokens.white_space) && !this.inComment) {
-                this.lexemes.push(lexeme);
+            else if (!lexeme.checkToken(Lexeme.tokens.white_space) && !this._inComment) {
+                this._lexemes.push(lexeme);
             }
-            /* else {
-                console.log('discarding ' + JSON.stringify(lexeme))
-            } */
+            // else {
+            //     console.log('Ignoring ' + JSON.stringify(lexeme));
+            // }
         }
     }
 
-    extractNextLexemeWithRegex(code) {
+    /**
+     * Converts the first portion of source code to a lexeme.
+     * @argument {string} code - The source code to analyze.
+     * @returns {Lexeme} A new lexeme representing the first part of the source code.
+     * @private
+     */
+    extractNextLexeme(code) {
         // Test for a match with each regex, in the order they are listed.
         let lexeme = null;
         for (let tryToken in Lexeme.tokens) {
@@ -46,123 +75,26 @@ class Lexer {   // eslint-disable-line no-unused-vars
                 break; // The first matching regex takes precedence.
             }
         }
-
         return lexeme;
     }
 
-    extractNextLexemeWithoutRegex(code) {
-        const WHITE_SPACE = ' \t\r\n';
-        const STOP_CHARS = WHITE_SPACE + '()=*/';
-
-        // Start with an empty lexeme.
-        let lexeme = new Lexeme(); 
-
-        // While there is still code to process ...
-        while (code.length > 0) {
-            // ... look at the next character.
-            let nextChar = code.substring(0, 1);
-
-            if (STOP_CHARS.indexOf(nextChar) < 0) {
-                // It is not a stop character, so append it to the lexeme's source ...
-                lexeme.source = lexeme.source + nextChar;
-                // ... and remove it from the code left to process.
-                code = code.substring(1);
-            }
-            else {
-                // It is a stop char, which marks the end of the lexeme's source.
-
-                if (lexeme.source.length === 0) {
-                    // If the lexeme's source is empty, the stop char is part of the lexeme's source.
-                    lexeme.source = nextChar;
-
-                    // If that was the first of two chars that open or close a comment ...
-                    let secondChar = code.substring(1, 2);
-                    if ((lexeme.source === '/' && secondChar === '*') ||
-                        (lexeme.source === '*' && secondChar === '/')) {
-                        // ... then both chars go in the lexeme's source.
-                        lexeme.source = lexeme.source + secondChar;
-                    }
-                }
-                else if (lexeme.source.length === 1 && WHITE_SPACE.indexOf(lexeme.source.substring(0, 1)) === 0) {
-                    // If the lexeme's source starts with white space, take all adjacent white space chars.
-                    while (code.length > 0 && WHITE_SPACE.indexOf(code.substring(0, 1)) >= 0) {
-                        lexeme.source = lexeme.source + code.substring(0, 1);
-                        code = code.substring(1);
-                    }
-                }
-
-                break; // The lexeme's source is now complete.
-            }
-        }
-
-        // Determine the lexeme's token.
-        if (lexeme.source === 'start' || lexeme.source === 'end' || lexeme.source === 'print') {
-            // Each reserved word has its own token.
-            lexeme.token = lexeme.source;
-        }
-        else if (this.matchIdentifier(lexeme.source)) {
-            lexeme.token = 'identifier';
-        }
-        else if (lexeme.source === "(") {
-            lexeme.token = "open_paren";
-        }
-        else if (lexeme.source === ")") {
-            lexeme.token = "close_paren";
-        }
-        else if (lexeme.source === "=") {
-            lexeme.token = "assignment_operator";
-        }
-        else if (lexeme.source === "/*") {
-            lexeme.token = "open_comment";
-        }
-        else if (lexeme.source === "*/") {
-            lexeme.token = "close_comment";
-        }
-        else if (WHITE_SPACE.indexOf(lexeme.source.substring(0, 1)) >= 0) {
-            lexeme.token = 'white_space';
-        }
-        else if (!isNaN(lexeme.source)) {
-            // isNaN returns false for empty string; this test must be after white space test.
-            lexeme.token = 'number';
-        }
-        else {
-            lexeme.token = "unrecognized";
-        }
-        return lexeme;
-    }
-
-    matchIdentifier(source) {
-        // valid identifiers are: [a-zA-Z][a-zA-Z0-9_]*
-
-        let char = source.substring(0, 1);
-
-        // first character must be a letter
-        if (!this.isLetter(char)) return false;
-
-        source = source.substring(1);
-
-        while (source.length > 0) {
-            // check next character
-            char = source.substring(0, 1);
-            source = source.substring(1);
-
-            if (!this.isLetter(char) && isNaN(char) && char !== '_') {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    isLetter(char) {
-        return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
-    }
-    
+    /**
+     * Provides sequential access to the sequence of lexemes. Repeatedly calling this method, always passing true (the default), will return each lexeme in sequence, return null after the last lexeme, then start the sequence over again. Passing false ensures that the *next* call will return the same lexeme returned by the current call.
+     * @argument {boolean} [advance=true] - Indicates whether or not to move the current position in the sequence forward.
+     * @modifies This lexer's current position in the sequence of lexemes, if <code>advance</code> is true.
+     * @returns {Lexeme} The lexeme at the current position in the sequence, or null if the sequence has ended.
+     * @public
+     */
     getLexeme(advance) {
-        if (this.lexemeIndex >= this.lexemes.length) {
-            this.lexemeIndex = 0;
+        if (this._lexemeIndex >= this._lexemes.length) {
+            this._lexemeIndex = 0;
             return null;
         }
-        return this.lexemes[advance === false ? this.lexemeIndex : this.lexemeIndex++];
+
+        let result = this._lexemes[this._lexemeIndex];
+        if (advance !== false) this._lexemeIndex++;
+        return result;
     }
 }
+
+export { Lexer };
